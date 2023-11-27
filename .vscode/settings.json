@@ -1,3 +1,6 @@
 {
-    "nrf-connect.topdir": "${nrf-connect.sdk:2.3.0}"
+    "nrf-connect.topdir": "${nrf-connect.sdk:2.3.0}",
+    "gitlens.codeLens.recentChange.enabled": false,
+    "gitlens.codeLens.authors.enabled": false,
+    "C_Cpp.default.configurationProvider": "nordic-semiconductor.nrf-connect",
 }

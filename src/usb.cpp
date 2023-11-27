@@ -4,17 +4,22 @@
 #include <zephyr/sys/ring_buffer.h>
 #include "usb.h"
 #include "log.h"
+#include "config.h"
 
-LOG_MODULE_REGISTER(app_usb, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(usb, LOG_LEVEL_DBG);
 
 namespace app {
 namespace {
 
+#if (USB_ECHO_TEST)
 constexpr auto ring_buf_size = 1024;
 
-const struct device *dev;
-struct ring_buf ringbuf;
 uint8_t ring_buffer[ring_buf_size];
+struct ring_buf ringbuf;
+#endif
+const struct device* dev;
+
+#if (USB_ECHO_TEST)
 
 void interrupt_handler(const struct device *dev, void *user_data)
 {
@@ -64,27 +69,43 @@ void interrupt_handler(const struct device *dev, void *user_data)
 	}
 }
 
+#endif
+
+#if (USB_STATUS_CALLBACK)
+
+void usb_status_handler(enum usb_dc_status_code cb_status, const uint8_t* param)
+{
+
+}
+
+#endif
+
 }
 
 void usb_init()
 {
+#if (USB_ECHO_TEST)
     ring_buf_init(&ringbuf, sizeof(ring_buffer), ring_buffer);
-
+#endif
     dev = DEVICE_DT_GET_ONE(zephyr_cdc_acm_uart);
 
     if (!device_is_ready(dev)) {
         LOG_E("failure: CDC ACM device not ready");
         return;
     }
-
+#if (USB_STATUS_CALLBACK)
+    int ret = usb_enable(usb_status_handler);
+#else
     int ret = usb_enable(nullptr);
+#endif
     if (ret != 0) {
         LOG_E("failure: usb_enable() -> %d", ret);
         return;
     }
+#if (USB_ECHO_TEST)
+
     LOG_I("Wait for DTR");
 
-    uint32_t baudrate = 0;
     uint32_t dtr = 0;
 
     while (true) {
@@ -92,7 +113,7 @@ void usb_init()
         if (dtr)
             break;
         else
-            k_sleep(K_MSEC(100)); /* Give CPU resources to low priority threads. */
+            k_msleep(100); /* Give CPU resources to low priority threads. */
     }
     LOG_I("DTR set");
 
@@ -105,8 +126,9 @@ void usb_init()
     if (ret)
         LOG_W("failure: set DSR, uart_line_ctrl_set() -> %d", ret);
 
-    /* Wait 1 sec for the host to do all settings */
-    k_busy_wait(1000000);
+    k_msleep(1000); // Wait 1 sec for the host to do all settings
+
+    uint32_t baudrate = 0;
 
     ret = uart_line_ctrl_get(dev, UART_LINE_CTRL_BAUD_RATE, &baudrate);
     if (ret)
@@ -114,15 +136,19 @@ void usb_init()
     else
         LOG_I("baudrate: %d", baudrate);
 
-    // TODO
-
     uart_irq_callback_set(dev, interrupt_handler);
 	uart_irq_rx_enable(dev);
+#endif
 }
 
-void usb_send(const uint8_t* data, size_t size)
+bool usb_send(const uint8_t* data, size_t size)
 {
-    uart_fifo_fill(dev, data, size);
+#if (USB_COBS)
+    
+#else
+    LOG_HEX_I(data, size, "USB TX");
+    return uart_fifo_fill(dev, data, size) == int(size);
+#endif
 }
 
 }

@@ -4,8 +4,9 @@
 #include "ble.h"
 #include "usb.h"
 #include "log.h"
+#include "config.h"
 
-LOG_MODULE_REGISTER(app_ble, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(ble, LOG_LEVEL_INF);
 
 #define TRY(...)                                        \
 {                                                       \
@@ -53,7 +54,7 @@ void log_scan_info(struct bt_scan_device_info *info, bool connectable)
 
     bt_addr_le_to_str(info->recv_info->addr, addr, sizeof(addr));
 
-    LOG_D("%s   \n\
+    LOG_I("%s   \n\
         rssi:           %+d     \n\
         tx_power:       %+d     \n\
         sid:            %u      \n\
@@ -75,19 +76,13 @@ void log_scan_info(struct bt_scan_device_info *info, bool connectable)
 
 void scan_process(struct bt_scan_device_info *device_info)
 {
-    uint8_t *raw_data   = device_info->adv_data->data;
+    uint8_t* raw_data   = device_info->adv_data->data;
     uint16_t raw_len    = device_info->adv_data->len;
-
-    LOG_HEX_I(raw_data, raw_len, "adv_data");
-
+    LOG_HEX_D(raw_data, raw_len, "adv_data");
     usb_send(raw_data, raw_len);
 
-    // TODO send through UART
-
     // if (raw_len > 7) {
-
     //     uint8_t payload_len = raw_data[3];
-
     //     if (payload_len == raw_len - 4)
     //         capsule_data_check(&raw_data[5], payload_len - 1, device_info->recv_info->addr->a.val, device_info->recv_info->rssi);
     // }
@@ -114,10 +109,14 @@ void scan_init()
     // Use active scanning and disable duplicate filtering to handle any
     // devices that might update their advertising data at runtime.
     struct bt_le_scan_param scan_param = {
-        .type     = BT_LE_SCAN_TYPE_PASSIVE,
-        .options  = BT_LE_SCAN_OPT_CODED | BT_LE_SCAN_OPT_NO_1M,
-        .interval = BT_GAP_SCAN_FAST_INTERVAL,
-        .window   = 0x60, // NOTE: Seems like 0x60 is maximum.
+        .type       = BT_LE_SCAN_TYPE_PASSIVE,
+#if (BLE_LONG_RANGE_SCAN)
+        .options    = BT_LE_SCAN_OPT_CODED | BT_LE_SCAN_OPT_NO_1M,
+#else
+        .options    = BT_LE_SCAN_OPT_NONE, 
+#endif
+        .interval   = BT_GAP_SCAN_FAST_INTERVAL,
+        .window     = 0x60, // NOTE: Seems like 0x60 is maximum.
     };
 
     struct bt_scan_init_param scan_init = {
