@@ -1,0 +1,16 @@
+#ifndef NTH_MISC_GIT_H
+#define NTH_MISC_GIT_H
+
+namespace nth {
+
+inline constexpr auto git_utc       = @GIT_UTC@;
+inline constexpr auto git_rev       = "@GIT_REV@";
+inline constexpr auto git_tag       = "@GIT_TAG@";
+inline constexpr auto git_date      = "@GIT_DATE@";
+inline constexpr auto git_commit    = "@GIT_COMMIT@";
+inline constexpr auto git_branch    = "@GIT_BRANCH@";
+inline constexpr auto git_clean     = @GIT_CLEAN@;
+
+}
+
+#endif
