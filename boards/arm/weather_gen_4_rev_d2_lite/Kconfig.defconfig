@@ -1,0 +1,12 @@
+# Copyright (c) 2023 Nordic Semiconductor ASA
+# SPDX-License-Identifier: Apache-2.0
+
+if BOARD_WEATHER_GEN_4_REV_D2_LITE
+
+config BOARD
+	default "weather_gen_4_rev_d2_lite"
+
+config BT_CTLR
+   default BT
+
+endif
