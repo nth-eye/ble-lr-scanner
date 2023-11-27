@@ -1,6 +1,7 @@
 #include <zephyr/usb/usb_device.h>
 #include <zephyr/usb/usbd.h>
 #include <zephyr/drivers/uart.h>
+#include <zephyr/sys/ring_buffer.h>
 #include "usb.h"
 #include "log.h"
 
@@ -9,12 +10,66 @@ LOG_MODULE_REGISTER(app_usb, LOG_LEVEL_INF);
 namespace app {
 namespace {
 
+constexpr auto ring_buf_size = 1024;
+
 const struct device *dev;
+struct ring_buf ringbuf;
+uint8_t ring_buffer[ring_buf_size];
+
+void interrupt_handler(const struct device *dev, void *user_data)
+{
+	ARG_UNUSED(user_data);
+
+    while (uart_irq_update(dev) && uart_irq_is_pending(dev)) {
+
+        if (uart_irq_rx_ready(dev)) {
+
+            int recv_len;
+            int rb_len;
+            uint8_t buffer[64];
+            size_t len = MIN(ring_buf_space_get(&ringbuf), sizeof(buffer));
+            recv_len = uart_fifo_read(dev, buffer, len);
+
+            if (recv_len < 0) {
+                recv_len = 0;
+                LOG_E("Failed to read UART FIFO");
+            }
+            rb_len = ring_buf_put(&ringbuf, buffer, recv_len);
+
+            if (rb_len < recv_len)
+                LOG_E("Drop %u bytes", recv_len - rb_len);
+
+            LOG_D("tty fifo -> ringbuf %d bytes", rb_len);
+
+            if (rb_len)
+                uart_irq_tx_enable(dev);
+        }
+
+        if (uart_irq_tx_ready(dev)) {
+
+            uint8_t buffer[64];
+
+            int rb_len = ring_buf_get(&ringbuf, buffer, sizeof(buffer));
+            if (!rb_len) {
+                LOG_D("Ring buffer empty, disable TX IRQ");
+                uart_irq_tx_disable(dev);
+                continue;
+            }
+            int send_len = uart_fifo_fill(dev, buffer, rb_len);
+            if (send_len < rb_len) 
+                LOG_E("Drop %d bytes", rb_len - send_len);
+
+            LOG_D("ringbuf -> tty fifo %d bytes", send_len);
+		}
+	}
+}
 
 }
 
 void usb_init()
 {
+    ring_buf_init(&ringbuf, sizeof(ring_buffer), ring_buffer);
+
     dev = DEVICE_DT_GET_ONE(zephyr_cdc_acm_uart);
 
     if (!device_is_ready(dev)) {
@@ -60,11 +115,14 @@ void usb_init()
         LOG_I("baudrate: %d", baudrate);
 
     // TODO
+
+    uart_irq_callback_set(dev, interrupt_handler);
+	uart_irq_rx_enable(dev);
 }
 
 void usb_send(const uint8_t* data, size_t size)
 {
-    // TODO
+    uart_fifo_fill(dev, data, size);
 }
 
 }
