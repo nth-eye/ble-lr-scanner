@@ -3,7 +3,11 @@ find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
 project(ble-lr-scanner)
 
+add_subdirectory(lib/nth)
+
 target_sources(app PRIVATE 
     src/main.cpp
     src/ble.cpp
     src/usb.cpp)
+target_link_libraries(app PRIVATE nth)
+target_include_directories(app PRIVATE lib/nth/inc)

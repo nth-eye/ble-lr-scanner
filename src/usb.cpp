@@ -5,6 +5,9 @@
 #include "usb.h"
 #include "log.h"
 #include "config.h"
+#if (USB_COBS)
+#include <nth/nth.h>
+#endif
 
 LOG_MODULE_REGISTER(usb, LOG_LEVEL_DBG);
 
@@ -18,6 +21,9 @@ uint8_t ring_buffer[ring_buf_size];
 struct ring_buf ringbuf;
 #endif
 const struct device* dev;
+#if (USB_COBS)
+nth::cobs_pipe_encoder cobs_pipe;
+#endif
 
 #if (USB_ECHO_TEST)
 
@@ -76,6 +82,16 @@ void interrupt_handler(const struct device *dev, void *user_data)
 void usb_status_handler(enum usb_dc_status_code cb_status, const uint8_t* param)
 {
 
+}
+
+#endif
+
+#if (USB_COBS)
+
+size_t cobs_write_handler(const uint8_t* data, size_t size)
+{
+    LOG_HEX_I(data, size, TXT_MAG "USB TX COBS chunk");
+    return size_t(uart_fifo_fill(dev, data, size));
 }
 
 #endif
@@ -143,11 +159,15 @@ void usb_init()
 
 bool usb_send(const uint8_t* data, size_t size)
 {
+    LOG_HEX_I(data, size, "USB TX raw");
 #if (USB_COBS)
-    
+    cobs_pipe.sink({data, size}, cobs_write_handler);
+    cobs_pipe.stop(cobs_write_handler);
+    return true;
 #else
-    LOG_HEX_I(data, size, "USB TX");
-    return uart_fifo_fill(dev, data, size) == int(size);
+    uint8_t len = size;
+    return  uart_fifo_fill(dev, &len, 1) == 1 &&
+            uart_fifo_fill(dev, data, size) == int(size);
 #endif
 }
 

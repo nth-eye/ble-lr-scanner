@@ -1,6 +1,10 @@
 #include <zephyr/kernel.h>
 #include "ble.h"
 #include "usb.h"
+#include "log.h"
+#include "config.h"
+
+LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);
 
 void regout0()
 {
@@ -36,4 +40,15 @@ int main(void)
     app::usb_init();
     app::ble_init();
     app::ble_scan_start();
+#if (USB_COBS_TEST)
+    uint8_t buf[27];
+    int cnt = 0;
+    while (1) {
+        for (int i = 0; i < sizeof(buf); ++i)
+            buf[i] = cnt * i;
+        cnt++;
+        app::usb_send(buf, sizeof(buf));
+        k_msleep(1000);
+    }
+#endif
 }

@@ -3,4 +3,12 @@
     "gitlens.codeLens.recentChange.enabled": false,
     "gitlens.codeLens.authors.enabled": false,
     "C_Cpp.default.configurationProvider": "nordic-semiconductor.nrf-connect",
+    "files.associations": {
+        "array": "cpp",
+        "string": "cpp",
+        "string_view": "cpp",
+        "ranges": "cpp",
+        "span": "cpp",
+        "initializer_list": "cpp"
+    },
 }

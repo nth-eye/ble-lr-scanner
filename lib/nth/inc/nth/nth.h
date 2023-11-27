@@ -16,7 +16,7 @@
 
 #include "nth/misc/cobs.h"
 #include "nth/misc/crc.h"
-#include "nth/misc/git.h"
+// #include "nth/misc/git.h"
 #include "nth/misc/qr.h"
 
 #include "nth/math/bigint.h"

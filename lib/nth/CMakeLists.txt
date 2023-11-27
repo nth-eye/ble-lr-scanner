@@ -69,7 +69,7 @@ configure_file(
 
 add_library(nth INTERFACE)
 target_include_directories(nth INTERFACE inc)
-target_compile_features(nth INTERFACE cxx_std_23)
+target_compile_features(nth INTERFACE cxx_std_20)
 target_compile_options(nth INTERFACE 
     "-Wall" 
     "-Wextra" 
@@ -84,80 +84,80 @@ target_compile_options(nth INTERFACE
 )
 # target_link_options(nth INTERFACE "-Wl,--gc-sections")
 
-add_executable(execnth main.cpp 
-    # inc/nth/dragonbox.cpp
-    # inc/nth/dragonbox_simple.cpp
-    # inc/nth/mydragonbox.cpp
-    # inc/nth/mydragonbox_simple.cpp
-)
-target_link_libraries(execnth PRIVATE nth)
-target_compile_features(execnth PRIVATE cxx_std_23)
-target_compile_options(execnth PRIVATE 
-    "-Wall" 
-    "-Wextra" 
-    "-Wpedantic"
-    # "-fno-rtti"
-    "-fno-exceptions"
-    "-fno-asynchronous-unwind-tables"
-    "-fdata-sections" 
-    "-ffunction-sections" 
-    "-fvisibility=hidden"
-)
-# target_link_options(execnth PRIVATE "-Wl,--gc-sections")
+# add_executable(execnth main.cpp 
+#     # inc/nth/dragonbox.cpp
+#     # inc/nth/dragonbox_simple.cpp
+#     # inc/nth/mydragonbox.cpp
+#     # inc/nth/mydragonbox_simple.cpp
+# )
+# target_link_libraries(execnth PRIVATE nth)
+# target_compile_features(execnth PRIVATE cxx_std_23)
+# target_compile_options(execnth PRIVATE 
+#     "-Wall" 
+#     "-Wextra" 
+#     "-Wpedantic"
+#     # "-fno-rtti"
+#     "-fno-exceptions"
+#     "-fno-asynchronous-unwind-tables"
+#     "-fdata-sections" 
+#     "-ffunction-sections" 
+#     "-fvisibility=hidden"
+# )
+# # target_link_options(execnth PRIVATE "-Wl,--gc-sections")
 
-add_executable(testnth 
-    test/cbor/dec.cpp
-    test/cbor/enc.cpp
-    test/coap/address.cpp
-    test/coap/option.cpp
-    test/coap/packet_option_delete.cpp
-    test/coap/packet_option_general.cpp
-    test/coap/packet_option_insert.cpp
-    test/coap/packet.cpp
-    test/container/list.cpp
-    test/container/pool.cpp
-    test/container/ring.cpp
-    test/container/stack.cpp
-    test/container/vector.cpp
-    # test/crypto/cipher/aes.cpp
-    test/crypto/cipher/chacha20.cpp
-    # test/crypto/ecc/crc.cpp
-    # test/crypto/hash/hash.cpp
-    # test/crypto/kdf/hkdf.cpp
-    # test/crypto/mac/hmac.cpp
-    # test/crypto/mode/mode.cpp
-    # test/crypto/otp/hotp.cpp
-    # test/crypto/util.cpp
-    test/io/print.cpp
-    test/math/bigint.cpp
-    test/math/finite.cpp
-    test/math/galois.cpp
-    test/math/general.cpp
-    test/math/interpolation.cpp
-    test/math/trigonometry.cpp
-    test/misc/cobs.cpp
-    test/misc/crc.cpp
-    test/misc/git.cpp
-    test/misc/qr.cpp
-    test/util/bit.cpp
-    test/util/bitset.cpp
-    test/util/bitslide.cpp
-    test/util/expected.cpp
-    test/util/half.cpp
-    test/util/literal.cpp
-    test/util/meta.cpp
-    test/util/scope.cpp
-    test/util/string.cpp
-    test/util/typeid.cpp
-)
-target_include_directories(testnth PRIVATE test)
-target_compile_features(testnth PRIVATE cxx_std_23)
-target_link_libraries(testnth PRIVATE gtest_main nth)
+# add_executable(testnth 
+#     test/cbor/dec.cpp
+#     test/cbor/enc.cpp
+#     test/coap/address.cpp
+#     test/coap/option.cpp
+#     test/coap/packet_option_delete.cpp
+#     test/coap/packet_option_general.cpp
+#     test/coap/packet_option_insert.cpp
+#     test/coap/packet.cpp
+#     test/container/list.cpp
+#     test/container/pool.cpp
+#     test/container/ring.cpp
+#     test/container/stack.cpp
+#     test/container/vector.cpp
+#     # test/crypto/cipher/aes.cpp
+#     test/crypto/cipher/chacha20.cpp
+#     # test/crypto/ecc/crc.cpp
+#     # test/crypto/hash/hash.cpp
+#     # test/crypto/kdf/hkdf.cpp
+#     # test/crypto/mac/hmac.cpp
+#     # test/crypto/mode/mode.cpp
+#     # test/crypto/otp/hotp.cpp
+#     # test/crypto/util.cpp
+#     test/io/print.cpp
+#     test/math/bigint.cpp
+#     test/math/finite.cpp
+#     test/math/galois.cpp
+#     test/math/general.cpp
+#     test/math/interpolation.cpp
+#     test/math/trigonometry.cpp
+#     test/misc/cobs.cpp
+#     test/misc/crc.cpp
+#     test/misc/git.cpp
+#     test/misc/qr.cpp
+#     test/util/bit.cpp
+#     test/util/bitset.cpp
+#     test/util/bitslide.cpp
+#     test/util/expected.cpp
+#     test/util/half.cpp
+#     test/util/literal.cpp
+#     test/util/meta.cpp
+#     test/util/scope.cpp
+#     test/util/string.cpp
+#     test/util/typeid.cpp
+# )
+# target_include_directories(testnth PRIVATE test)
+# target_compile_features(testnth PRIVATE cxx_std_23)
+# target_link_libraries(testnth PRIVATE gtest_main nth)
 
-enable_testing()
-include(FetchContent)
-FetchContent_Declare(googletest URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip)
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
-include(GoogleTest)
-gtest_discover_tests(testnth)
+# enable_testing()
+# include(FetchContent)
+# FetchContent_Declare(googletest URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip)
+# set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+# FetchContent_MakeAvailable(googletest)
+# include(GoogleTest)
+# gtest_discover_tests(testnth)
