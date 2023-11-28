@@ -79,7 +79,11 @@ void scan_process(struct bt_scan_device_info *device_info)
     uint8_t* raw_data   = device_info->adv_data->data;
     uint16_t raw_len    = device_info->adv_data->len;
     LOG_HEX_D(raw_data, raw_len, "adv_data");
+
+    usb_send(&device_info->recv_info->rssi, 1);
+    usb_send(device_info->recv_info->addr->a.val, 6);
     usb_send(raw_data, raw_len);
+    usb_send_finalize();
 
     // if (raw_len > 7) {
     //     uint8_t payload_len = raw_data[3];

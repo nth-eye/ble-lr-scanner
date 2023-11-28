@@ -157,17 +157,26 @@ void usb_init()
 #endif
 }
 
-bool usb_send(const uint8_t* data, size_t size)
+bool usb_send(const void* data, size_t size)
 {
-    LOG_HEX_I(data, size, "USB TX raw");
+    LOG_HEX_I(data, size, "USB TX raw chunk");
 #if (USB_COBS)
-    cobs_pipe.sink({data, size}, cobs_write_handler);
-    cobs_pipe.stop(cobs_write_handler);
+    cobs_pipe.sink({static_cast<const uint8_t*>(data), size}, cobs_write_handler);
     return true;
 #else
     uint8_t len = size;
     return  uart_fifo_fill(dev, &len, 1) == 1 &&
             uart_fifo_fill(dev, data, size) == int(size);
+#endif
+}
+
+bool usb_send_finalize()
+{
+#if (USB_COBS)
+    cobs_pipe.stop(cobs_write_handler);
+    return true;
+#else
+    static_assert(false);
 #endif
 }
 

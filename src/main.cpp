@@ -38,16 +38,19 @@ int main(void)
     regout0();
     approtect_hw_disable();
     app::usb_init();
+#if !(USB_COBS_TEST)
     app::ble_init();
     app::ble_scan_start();
-#if (USB_COBS_TEST)
-    uint8_t buf[27];
-    int cnt = 0;
+#else
+    // uint8_t buf[27];
+    // int cnt = 0;
     while (1) {
-        for (int i = 0; i < sizeof(buf); ++i)
-            buf[i] = cnt * i;
-        cnt++;
-        app::usb_send(buf, sizeof(buf));
+        // for (int i = 0; i < sizeof(buf); ++i)
+        //     buf[i] = cnt * i;
+        // cnt++;
+        // app::usb_send(buf, sizeof(buf));
+        app::usb_send("hello, world!", sizeof("hello, world!") - 1);
+        app::usb_send_finalize();
         k_msleep(1000);
     }
 #endif

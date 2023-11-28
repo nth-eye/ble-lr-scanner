@@ -7,7 +7,8 @@
 namespace app {
 
 void usb_init();
-bool usb_send(const uint8_t* data, size_t size);
+bool usb_send(const void* data, size_t size);
+bool usb_send_finalize();
 
 }
 
